@@ -218,3 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# BreakfastWise local database and backups
+data/*.db
+data/*.db-*

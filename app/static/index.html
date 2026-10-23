@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BreakfastWise — Hotel Breakfast Demand Forecasting</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand-wrapper">
+        <div class="brand-icon">🍳</div>
+        <div>
+          <div class="brand-title">BreakfastWise</div>
+          <div class="brand-subtitle">Hotel Breakfast Demand Intelligence & Forecasting</div>
+        </div>
+      </div>
+
+      <div class="nav-status">
+        <div class="epic-badge" title="Currently implementing Epic 1">
+          <span class="dot"></span>
+          <span>Epic 1: Hotel Data Management (Stories 1–3)</span>
+        </div>
+        <button class="btn-secondary" id="btn-refresh" title="Reload data">
+          <span>🔄</span> Refresh
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="main-wrapper">
+
+    <!-- KPI Summary Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon days">📅</div>
+        <div>
+          <div class="kpi-label">Days Logged</div>
+          <div class="kpi-value" id="kpi-days">0</div>
+          <div class="kpi-subtext">Total tracked history</div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon occ">👥</div>
+        <div>
+          <div class="kpi-label">Avg Expected Occupancy</div>
+          <div class="kpi-value" id="kpi-occ">—</div>
+          <div class="kpi-subtext">Average daily guests</div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon cons">🥐</div>
+        <div>
+          <div class="kpi-label">Avg Breakfast Served</div>
+          <div class="kpi-value" id="kpi-cons">—</div>
+          <div class="kpi-subtext">Average meals consumed</div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon rate">📊</div>
+        <div>
+          <div class="kpi-label">Overall Take-up Rate</div>
+          <div class="kpi-value" id="kpi-rate">—</div>
+          <div class="kpi-subtext">Aggregate on matched days</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two-column Content Grid -->
+    <div class="content-grid">
+
+      <!-- LEFT COLUMN: Data Entry Forms (Story 1 & Story 2) -->
+      <aside>
+
+        <!-- Story 1: Enter Expected Occupancy -->
+        <div class="card" id="story-1-card">
+          <div class="card-header">
+            <div class="card-header-title">
+              <span class="story-pill s1">Story 1</span>
+              <div>
+                <div class="card-title">Expected Occupancy</div>
+                <div class="card-description">Plan ahead for upcoming guest arrivals</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form id="occupancy-form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="occ-date">Target Date <span class="required">*</span></label>
+                <input type="date" id="occ-date" class="form-input" required>
+                <div class="form-hint">Select upcoming date or tomorrow's service</div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="occ-count">Expected Guests <span class="required">*</span></label>
+                  <input type="number" id="occ-count" class="form-input" min="0" placeholder="e.g. 120" required>
+                  <div class="form-hint">Must be 0 or greater</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="occ-rooms">Total Rooms</label>
+                  <input type="number" id="occ-rooms" class="form-input" min="0" placeholder="e.g. 75">
+                  <div class="form-hint">Booked / Available</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="occ-notes">Operational Notes</label>
+                <textarea id="occ-notes" class="form-textarea" rows="2" placeholder="e.g. Tour bus arrival (30 pax), VIP corporate retreat"></textarea>
+              </div>
+
+              <button type="submit" class="btn-primary" id="btn-submit-occ">
+                <span>💾</span> Save Expected Occupancy
+              </button>
+
+              <div id="occ-banner" class="form-banner"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Story 2: Record Previous Breakfast Consumption -->
+        <div class="card" id="story-2-card">
+          <div class="card-header">
+            <div class="card-header-title">
+              <span class="story-pill s2">Story 2</span>
+              <div>
+                <div class="card-title">Record Consumption</div>
+                <div class="card-description">Log actual breakfast covers served</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form id="consumption-form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="cons-date">Service Date <span class="required">*</span></label>
+                <input type="date" id="cons-date" class="form-input" required>
+                <div class="form-hint">Select date when breakfast was served</div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="cons-count">Actual Breakfast Meals <span class="required">*</span></label>
+                  <input type="number" id="cons-count" class="form-input" min="0" placeholder="e.g. 102" required>
+                  <div class="form-hint">Guests served (>= 0)</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="cons-actual-occ">Actual In-House Guests</label>
+                  <input type="number" id="cons-actual-occ" class="form-input" min="0" placeholder="e.g. 118">
+                  <div class="form-hint">Optional verified count</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="cons-notes">Service Notes</label>
+                <textarea id="cons-notes" class="form-textarea" rows="2" placeholder="e.g. High buffet demand, 15 late diners, stormy weather"></textarea>
+              </div>
+
+              <button type="submit" class="btn-primary consumption" id="btn-submit-cons">
+                <span>✓</span> Record Breakfast Consumption
+              </button>
+
+              <div id="cons-banner" class="form-banner"></div>
+            </form>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN: Historical Records & Data Table (Story 3) -->
+      <section>
+        <div class="card" id="story-3-card">
+          <div class="card-header">
+            <div class="card-header-title">
+              <span class="story-pill s3">Story 3</span>
+              <div>
+                <div class="card-title">Historical Occupancy & Consumption Records</div>
+                <div class="card-description">Track historical trends, take-up rates, and variances</div>
+              </div>
+            </div>
+            <div id="records-count-text" style="font-size: 0.8rem; font-weight: 700; color: var(--neutral-500);">
+              0 records
+            </div>
+          </div>
+
+          <!-- Filter & Search Bar -->
+          <div class="filter-bar">
+            <div class="filter-pills">
+              <button class="pill-btn active" id="filter-all">All Time</button>
+              <button class="pill-btn" id="filter-7d">Last 7 Days</button>
+              <button class="pill-btn" id="filter-14d">Last 14 Days</button>
+              <button class="pill-btn" id="filter-30d">Last 30 Days</button>
+            </div>
+
+            <div class="filter-custom">
+              <input type="date" id="filter-start-date" class="filter-date-input" title="Start Date">
+              <span style="font-size:0.75rem; color:var(--neutral-400);">to</span>
+              <input type="date" id="filter-end-date" class="filter-date-input" title="End Date">
+              <button class="btn-secondary" id="filter-custom-apply" style="padding: 0.35rem 0.65rem;">Filter</button>
+              <button class="btn-secondary" id="filter-custom-reset" style="padding: 0.35rem 0.65rem;">Reset</button>
+            </div>
+
+            <div style="width: 100%; margin-top: 0.3rem;">
+              <input type="text" id="search-input" class="form-input" style="padding: 0.4rem 0.7rem; font-size: 0.82rem;" placeholder="🔍 Filter records by date or keyword...">
+            </div>
+          </div>
+
+          <!-- Empty State (Shown when no historical records exist) -->
+          <div id="empty-state" class="empty-state-container" style="display: none;">
+            <div class="empty-state-icon">📋</div>
+            <h3 class="empty-state-title">No Historical Records Found</h3>
+            <p class="empty-state-text">
+              There are no occupancy or consumption logs in the system matching your criteria.
+              Start by entering expected occupancy or recording breakfast consumption using the forms on the left, or load sample hotel data.
+            </p>
+            <div class="empty-state-actions">
+              <button class="btn-primary" id="btn-empty-seed" style="width: auto; padding: 0.6rem 1.25rem;">
+                <span>✨</span> Load Sample Hotel Data (14 Days)
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Container (Shown when records exist) -->
+          <div id="table-container" class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Expected Occupancy</th>
+                  <th>Actual Consumption</th>
+                  <th>Take-up Rate</th>
+                  <th>Variance</th>
+                  <th>Status</th>
+                  <th>Operational Notes</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Developer & Demo Tools (Collapsible & Safe) -->
+    <section class="demo-tools-wrapper">
+      <details class="demo-tools-details">
+        <summary class="demo-tools-summary">
+          <span>⚙️ Developer / Demo Tools (Testing Only)</span>
+          <span style="font-size:0.75rem; color:var(--neutral-400);">Click to expand</span>
+        </summary>
+        <div class="demo-tools-content">
+          <div class="demo-tools-warning">
+            <strong>⚠️ Caution:</strong> These controls modify the persistent database and are intended for testing and demonstration only. User authentication has not yet been implemented (planned for Phase 5), so these controls are accessible to any user who visits this page. In a live hotel environment, clearing data will delete real historical records.
+          </div>
+          <div class="demo-tools-actions">
+            <button type="button" class="btn-secondary" id="btn-seed" title="Seed 14 days of realistic hotel sample data">
+              <span>✨</span> Seed 14 Days Sample Data
+            </button>
+            <button type="button" class="btn-danger-outline" id="btn-clear" title="Clear all data to test empty state">
+              <span>🗑</span> Clear All Historical Records
+            </button>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </main>
+
+  <!-- Edit Entry Modal -->
+  <div class="modal-backdrop" id="edit-modal">
+    <div class="modal-dialog" style="max-width: 540px;">
+      <div class="modal-header">
+        <div class="modal-title">Edit Entry for <span id="modal-date-label"></span></div>
+        <button class="action-icon-btn" id="edit-modal-close">&times;</button>
+      </div>
+      <form id="edit-form" novalidate>
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+          <input type="hidden" id="edit-date">
+
+          <!-- Section 1: Expected Occupancy -->
+          <div class="modal-section-title">🏨 Story 1: Expected Occupancy</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-occ">Expected Guests</label>
+              <input type="number" id="edit-occ" class="form-input" min="0" placeholder="e.g. 120">
+              <div class="form-hint">Whole number (&ge; 0)</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-rooms">Total Rooms</label>
+              <input type="number" id="edit-rooms" class="form-input" min="0" placeholder="e.g. 75">
+              <div class="form-hint">Booked / Available</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-occ-notes">Occupancy Notes</label>
+            <input type="text" id="edit-occ-notes" class="form-input" placeholder="e.g. Corporate retreat, wedding block">
+          </div>
+
+          <!-- Section 2: Breakfast Consumption -->
+          <div class="modal-section-title">🥐 Story 2: Breakfast Consumption</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-cons">Actual Breakfast Served</label>
+              <input type="number" id="edit-cons" class="form-input" min="0" placeholder="e.g. 105">
+              <div class="form-hint">Whole meals (&ge; 0)</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-actual-occ">Actual In-House Guests</label>
+              <input type="number" id="edit-actual-occ" class="form-input" min="0" placeholder="e.g. 118">
+              <div class="form-hint">Verified guest count</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-cons-notes">Service Notes</label>
+            <input type="text" id="edit-cons-notes" class="form-input" placeholder="e.g. High buffet turnover, 10 walk-ins">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="edit-modal-cancel">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    BreakfastWise &bull; Hotel Breakfast Demand Forecasting &bull; Epic 1: Hotel Data Management
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
