@@ -5,7 +5,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 DEFAULT_DB_PATH = DATA_DIR / "breakfastwise.db"
 
+# Use PostgreSQL when DATABASE_URL is configured.
+# Otherwise, use the existing local SQLite database.
+DATABASE_URL = os.getenv("DATABASE_URL")
 DATABASE_PATH = os.getenv("DATABASE_PATH", str(DEFAULT_DB_PATH))
+
 
 def get_database_path() -> str:
     db_path = Path(DATABASE_PATH)

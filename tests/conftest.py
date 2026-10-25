@@ -33,6 +33,8 @@ def client():
     with get_db(temp_db_path) as conn:
         conn.execute("DELETE FROM occupancy_records;")
         conn.execute("DELETE FROM consumption_records;")
+        conn.execute("DELETE FROM users;")
+        conn.execute("DELETE FROM dish_daily_records;")
     
     with TestClient(app) as test_client:
         yield test_client

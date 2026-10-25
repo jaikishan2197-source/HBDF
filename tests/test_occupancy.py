@@ -167,3 +167,24 @@ def test_delete_occupancy(client):
     # Verify deleted
     get_res = client.get("/api/occupancy/2026-10-29")
     assert get_res.status_code == 404
+
+
+def test_enter_expected_occupancy_with_separate_guest_groups(client):
+    """Story 1: Enter expected occupancy using separate guest groups and event covers."""
+    payload = {
+        "date": "2026-11-20",
+        "guests_included": 90,
+        "guests_other": 30,
+        "event_expected_covers": 15,
+        "total_rooms": 75,
+        "notes": "Corporate conference"
+    }
+    response = client.post("/api/occupancy", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["date"] == "2026-11-20"
+    assert data["expected_occupancy"] == 120  # Sum of resident guest groups
+    assert data["guests_included"] == 90
+    assert data["guests_other"] == 30
+    assert data["event_expected_covers"] == 15
+    assert data["total_rooms"] == 75

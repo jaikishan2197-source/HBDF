@@ -26,10 +26,13 @@
       </div>
 
       <div class="nav-status">
-        <div class="epic-badge" title="Currently implementing Epic 1">
+        <div class="epic-badge" title="Hotel data management and breakfast forecasting">
           <span class="dot"></span>
-          <span>Epic 1: Hotel Data Management (Stories 1–3)</span>
+          <span>Hotel Data & Breakfast Forecasting</span>
         </div>
+        <a href="/register" class="btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;" title="Create user account">
+          <span>👤</span> Register
+        </a>
         <button class="btn-secondary" id="btn-refresh" title="Reload data">
           <span>🔄</span> Refresh
         </button>
@@ -79,13 +82,252 @@
       </div>
     </section>
 
+    <section class="forecast-section" aria-labelledby="forecast-title">
+      <div class="forecast-heading">
+        <div>
+          <div class="forecast-eyebrow">Epic 2 · Demand planning</div>
+          <h2 id="forecast-title">Breakfast demand forecast</h2>
+          <p class="forecast-description">Estimate breakfast covers and prepare item quantities for a future service.</p>
+        </div>
+        <div class="synthetic-notice" role="note">
+          <span class="synthetic-dot" aria-hidden="true"></span>
+          <span><strong>Synthetic training data</strong><br>Demo estimates only; not trained on verified hotel history.</span>
+        </div>
+      </div>
+
+      <div class="forecast-layout">
+        <form id="forecast-form" class="forecast-form" novalidate>
+          <div class="forecast-input-grid">
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label" for="forecast-date">Breakfast Service Date <span class="required">*</span></label>
+              <input type="date" id="forecast-date" class="form-input" required>
+              <div class="form-hint" id="forecast-weekday-hint">Select upcoming date or tomorrow's service</div>
+            </div>
+
+            <!-- Separate Resident Guest Categories -->
+            <div class="form-group">
+              <label class="form-label" for="forecast-guests-included">Guests with Breakfast Included <span class="required">*</span></label>
+              <input type="number" id="forecast-guests-included" class="form-input" min="0" max="200" step="1" value="90" required>
+              <div class="form-hint">Resident guests with breakfast package in room rate</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="forecast-guests-other">Guests without Breakfast Included <span class="required">*</span></label>
+              <input type="number" id="forecast-guests-other" class="form-input" min="0" max="200" step="1" value="30" required>
+              <div class="form-hint">Room-only / other resident guests</div>
+            </div>
+
+            <!-- Total Resident Guests Indicator -->
+            <div style="grid-column: 1 / -1; font-size: 0.82rem; font-weight: 700; color: #1e3a8a; background: #eff6ff; padding: 0.45rem 0.75rem; border-radius: 6px; border: 1px solid #bfdbfe; margin-top: -0.2rem; margin-bottom: 0.65rem;">
+              Total resident guests: <strong id="forecast-total-guests-label">120</strong> guests (sum of included + without breakfast)
+            </div>
+
+            <!-- Event Uplift -->
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label" for="forecast-event-covers">Event Expected Covers</label>
+              <input type="number" id="forecast-event-covers" class="form-input" min="0" max="200" step="1" value="0">
+              <div class="form-hint">Non-resident event diners (added once; excluded from resident capture rates)</div>
+            </div>
+
+            <fieldset class="forecast-flags">
+              <legend>Service conditions</legend>
+              <label class="forecast-check"><input type="checkbox" id="forecast-event"> <span>Special event scheduled</span></label>
+              <label class="forecast-check"><input type="checkbox" id="forecast-holiday"> <span>Holiday</span></label>
+            </fieldset>
+
+            <!-- Preparation Buffer Slider -->
+            <div class="form-group" style="grid-column: 1 / -1; border-top: 1px solid var(--neutral-200); padding-top: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <label class="form-label" for="forecast-buffer-slider" style="margin-bottom: 0;">Preparation Buffer</label>
+                <span id="buffer-val-display" style="font-size: 0.82rem; font-weight: 800; color: #176b5b; background: #e8f5f1; padding: 0.15rem 0.5rem; border-radius: 4px;">10%</span>
+              </div>
+              <input type="range" id="forecast-buffer-slider" min="0" max="25" step="1" value="10" style="width: 100%; accent-color: #176b5b; cursor: pointer;">
+              <div class="form-hint" style="display:flex; justify-content:space-between; margin-top:0.2rem;">
+                <span>0% (Tight)</span>
+                <span>Default: 10%</span>
+                <span>25% (Safe)</span>
+              </div>
+            </div>
+          </div>
+
+          <fieldset class="portion-assumptions">
+            <legend>Portion assumptions <span>servings per forecast cover</span></legend>
+            <div class="portion-input-grid" style="grid-template-columns: repeat(5, minmax(0, 1fr));">
+              <label class="portion-input" for="portion-idli">Idli (pcs)<input id="portion-idli" data-portion-item="idli" type="number" min="0" max="3" step="0.05" value="1.2"></label>
+              <label class="portion-input" for="portion-dosa">Dosa (pcs)<input id="portion-dosa" data-portion-item="dosa" type="number" min="0" max="3" step="0.05" value="0.35"></label>
+              <label class="portion-input" for="portion-pongal">Pongal (kg)<input id="portion-pongal" data-portion-item="pongal" type="number" min="0" max="3" step="0.05" value="0.35"></label>
+              <label class="portion-input" for="portion-poori">Poori (pcs)<input id="portion-poori" data-portion-item="poori" type="number" min="0" max="3" step="0.05" value="0.3"></label>
+              <label class="portion-input" for="portion-sambar">Sambar (L)<input id="portion-sambar" data-portion-item="sambar" type="number" min="0" max="3" step="0.05" value="0.4"></label>
+            </div>
+          </fieldset>
+
+          <div class="forecast-submit-row">
+            <button type="submit" class="btn-primary forecast-submit" id="btn-run-forecast" style="background:#2563eb;">
+              <span aria-hidden="true">↗</span> Forecast Breakfast Demand
+            </button>
+            <p id="forecast-form-message" class="forecast-form-message" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+
+        <div class="forecast-output" id="forecast-output" aria-live="polite">
+          <div class="forecast-empty" id="forecast-empty">
+            <span class="forecast-empty-mark" aria-hidden="true">↗</span>
+            <h3>No forecast generated</h3>
+            <p>Select a breakfast service date and guest counts to generate the capture-rate forecast.</p>
+          </div>
+
+          <div id="forecast-results" hidden>
+            
+            <!-- Warning Box (if < 4 matching weekdays) -->
+            <div id="forecast-warning-container" class="forecast-warning-banner" style="display:none;"></div>
+
+            <!-- Hero Result Card -->
+            <div class="forecast-result-hero">
+              <div>
+                <div class="forecast-result-label">Predicted Breakfast Demand</div>
+                <div class="forecast-result-value"><span id="forecast-guests-value">—</span><span class="forecast-result-unit">covers</span></div>
+                <div class="forecast-result-date" id="forecast-result-date"></div>
+                <div id="forecast-resident-breakdown" style="font-size:0.75rem; color:#d2e8e1; margin-top:0.25rem;"></div>
+              </div>
+              <div class="forecast-model-choice">
+                <span>Primary Forecast Method</span>
+                <strong id="forecast-selected-model">Two-Rate Capture Rate</strong>
+                <span id="forecast-matching-days-badge" style="font-size: 0.68rem; color: #a7f3d0; margin-top: 0.2rem;"></span>
+              </div>
+            </div>
+
+            <!-- Transparent Calculation Breakdown Panel -->
+            <div class="calc-breakdown-card">
+              <div class="calc-breakdown-header">
+                <div>
+                  <h4>Transparent Calculation Breakdown</h4>
+                  <div class="calc-subtitle" id="calc-dates-summary">Pooled sums from matching weekdays</div>
+                </div>
+                <button type="button" class="btn-secondary" id="btn-toggle-details" style="font-size:0.72rem; padding:0.25rem 0.55rem;">
+                  View History Table
+                </button>
+              </div>
+
+              <div class="calc-steps-grid">
+                <div class="calc-step-box">
+                  <div class="calc-step-title">Included Capture Rate (r_i)</div>
+                  <div class="calc-step-formula" id="calc-formula-inc">Σ covers ÷ Σ guests</div>
+                  <div class="calc-step-val" id="calc-val-inc">—</div>
+                </div>
+                <div class="calc-step-box">
+                  <div class="calc-step-title">Other Capture Rate (r_o)</div>
+                  <div class="calc-step-formula" id="calc-formula-oth">Σ covers ÷ Σ guests</div>
+                  <div class="calc-step-val" id="calc-val-oth">—</div>
+                </div>
+                <div class="calc-step-box">
+                  <div class="calc-step-title">Resident Covers</div>
+                  <div class="calc-step-formula">Included × r_i + Other × r_o</div>
+                  <div class="calc-step-val" id="calc-val-resident">—</div>
+                </div>
+                <div class="calc-step-box">
+                  <div class="calc-step-title">Event Uplift</div>
+                  <div class="calc-step-formula">Non-resident diners added once</div>
+                  <div class="calc-step-val" id="calc-val-event">—</div>
+                </div>
+                <div class="calc-step-box highlight">
+                  <div class="calc-step-title">Final Covers Forecast</div>
+                  <div class="calc-step-formula">round(Resident + Uplift)</div>
+                  <div class="calc-step-val" id="calc-val-final">—</div>
+                </div>
+              </div>
+
+              <!-- Matching Days History Table (Collapsible) -->
+              <div id="calc-history-details" style="display:none; margin-top: 0.85rem; border-top: 1px solid var(--neutral-200); padding-top: 0.75rem;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--neutral-700); margin-bottom: 0.4rem;">Historical Matching Weekdays Used:</div>
+                <div class="forecast-table-wrap">
+                  <table class="forecast-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Included Guests</th>
+                        <th>Included Covers</th>
+                        <th>Rate %</th>
+                        <th>Other Guests</th>
+                        <th>Other Covers</th>
+                        <th>Rate %</th>
+                        <th>Event Covers</th>
+                      </tr>
+                    </thead>
+                    <tbody id="calc-history-tbody"></tbody>
+                  </table>
+                </div>
+
+                <!-- Excluded Matching Dates Table (if any) -->
+                <div id="calc-excluded-details" style="display:none; margin-top: 0.85rem; border-top: 1px dashed #f59e0b; padding-top: 0.65rem;">
+                  <div style="font-size: 0.75rem; font-weight: 700; color: #b45309; margin-bottom: 0.4rem;">Excluded Matching Dates (Marked for Verification):</div>
+                  <div class="forecast-table-wrap">
+                    <table class="forecast-table">
+                      <thead>
+                        <tr style="background: #fffbeb;">
+                          <th>Date</th>
+                          <th>Day</th>
+                          <th>Included (G / C)</th>
+                          <th>Other (G / C)</th>
+                          <th>Exclusion Reason</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody id="calc-excluded-tbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Food Preparation & Comparative Models Grid -->
+            <div class="forecast-result-grid" style="margin-top: 1rem;">
+              <section class="forecast-result-block" aria-labelledby="forecast-portions-title">
+                <div class="forecast-block-heading">
+                  <h3 id="forecast-portions-title">Food Preparation Quantities</h3>
+                  <span id="forecast-buffer-applied-label">Buffered (+10%)</span>
+                </div>
+                <div class="forecast-table-wrap">
+                  <table class="forecast-table portions-table">
+                    <thead><tr><th>Item</th><th>Unit</th><th>Per Cover</th><th>Base Qty</th><th>Buffer</th><th>Recommended Prep</th></tr></thead>
+                    <tbody id="forecast-portions-body"></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="forecast-result-block" aria-labelledby="forecast-models-title">
+                <div class="forecast-block-heading">
+                  <h3 id="forecast-models-title">Comparative ML Models</h3>
+                  <span class="synthetic-badge" style="background:#fef3c7; color:#92400e; font-size:0.7rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:4px;">Synthetic Holdout Reference</span>
+                </div>
+                <p style="font-size: 0.72rem; color: var(--neutral-600); margin: 0.35rem 0 0.65rem 0; line-height: 1.4;">
+                  <strong>Notice:</strong> MAE &amp; RMSE metrics are evaluated on synthetic demo data and <em>do not establish verified real-world hotel accuracy</em>. The operational forecast uses actual matching weekday capture rates.
+                </p>
+                <div class="forecast-table-wrap">
+                  <table class="forecast-table">
+                    <thead><tr><th>Model</th><th>Prediction</th><th>Synthetic MAE</th><th>Synthetic RMSE</th></tr></thead>
+                    <tbody id="forecast-models-body"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+
+            <div class="forecast-result-source" id="forecast-result-source">
+              Calculated dynamically from matching historical weekday records &bull; Synthetic demo data for ML reference only
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Two-column Content Grid -->
     <div class="content-grid">
 
       <!-- LEFT COLUMN: Data Entry Forms (Story 1 & Story 2) -->
       <aside>
 
-        <!-- Story 1: Enter Expected Occupancy -->
+        <!-- Story 1: Enter Expected Occupancy with Separate Guest Groups -->
         <div class="card" id="story-1-card">
           <div class="card-header">
             <div class="card-header-title">
@@ -106,9 +348,23 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label" for="occ-count">Expected Guests <span class="required">*</span></label>
-                  <input type="number" id="occ-count" class="form-input" min="0" placeholder="e.g. 120" required>
-                  <div class="form-hint">Must be 0 or greater</div>
+                  <label class="form-label" for="occ-guests-included">Guests with Breakfast Included <span class="required">*</span></label>
+                  <input type="number" id="occ-guests-included" class="form-input" min="0" placeholder="e.g. 90" required>
+                  <div class="form-hint">Resident breakfast package</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="occ-guests-other">Guests without Breakfast <span class="required">*</span></label>
+                  <input type="number" id="occ-guests-other" class="form-input" min="0" placeholder="e.g. 30" required>
+                  <div class="form-hint">Room-only / other residents</div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="occ-event-covers">Event Expected Covers</label>
+                  <input type="number" id="occ-event-covers" class="form-input" min="0" placeholder="e.g. 0" value="0">
+                  <div class="form-hint">Non-resident event diners</div>
                 </div>
 
                 <div class="form-group">
@@ -116,6 +372,10 @@
                   <input type="number" id="occ-rooms" class="form-input" min="0" placeholder="e.g. 75">
                   <div class="form-hint">Booked / Available</div>
                 </div>
+              </div>
+
+              <div style="font-size: 0.8rem; font-weight: 700; color: #176b5b; background: #e8f5f1; padding: 0.4rem 0.65rem; border-radius: 6px; margin-bottom: 0.85rem;">
+                Total Resident Guests: <span id="occ-total-resident-display">0</span> guests
               </div>
 
               <div class="form-group">
@@ -260,7 +520,263 @@
 
     </div>
 
-    <!-- Developer & Demo Tools (Collapsible & Safe) -->
+    <!-- ======================================================== -->
+    <!-- EPIC 3: DISH CONSUMPTION, FOOD WASTE & ACCURACY SECTION   -->
+    <!-- ======================================================== -->
+    <section class="forecast-section" id="epic3-section" aria-labelledby="epic3-title" style="margin-top: 2rem;">
+      <div class="forecast-heading">
+        <div>
+          <div class="forecast-eyebrow" style="background:#fef3c7; color:#b45309;">Epic 3 · Kitchen Operations & Sustainability</div>
+          <h2 id="epic3-title">Dish Consumption, Food Waste & Forecast Accuracy</h2>
+          <p class="forecast-description">Track dish-wise daily kitchen logs, food waste percentages, stock-outs, and leakage-free forecast accuracy.</p>
+        </div>
+        <div class="synthetic-notice" role="note" style="background: #fff1f2; border: 1px solid #fecdd3;">
+          <span class="synthetic-dot" style="background: #e11d48;" aria-hidden="true"></span>
+          <span style="color: #9f1239;"><strong>SYNTHETIC DEMO DATA — NOT REAL HOTEL DATA</strong><br>Observations reflect demo kitchen entries. Never invent historical observations for missing dates.</span>
+        </div>
+      </div>
+
+      <!-- Grid: Log Dish Form & Historical Dish Dashboard -->
+      <div class="content-grid" style="margin-top: 1rem;">
+        
+        <!-- Left: Log Daily Dish Record -->
+        <aside>
+          <div class="card" id="dish-form-card">
+            <div class="card-header">
+              <div class="card-header-title">
+                <span class="story-pill" style="background: #fef3c7; color: #b45309;">Kitchen Log</span>
+                <div>
+                  <div class="card-title">Daily Dish Service Log</div>
+                  <div class="card-description">Record prepared, consumed, & discarded quantities</div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <form id="dish-record-form" novalidate>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="dish-date">Service Date <span class="required">*</span></label>
+                    <input type="date" id="dish-date" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="dish-select-item">Dish <span class="required">*</span></label>
+                    <select id="dish-select-item" class="form-input" required>
+                      <option value="idli">Idli (pieces)</option>
+                      <option value="dosa">Dosa (pieces)</option>
+                      <option value="poori">Poori (pieces)</option>
+                      <option value="pongal">Pongal (kg)</option>
+                      <option value="sambar">Sambar (litres)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="dish-prep">Quantity Prepared <span class="required">*</span></label>
+                    <input type="number" step="any" min="0" id="dish-prep" class="form-input" placeholder="e.g. 150" required>
+                    <div class="form-hint" id="dish-prep-hint">Total batch prepared (>= 0)</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="dish-cons">Quantity Consumed <span class="required">*</span></label>
+                    <input type="number" step="any" min="0" id="dish-cons" class="form-input" placeholder="e.g. 135" required>
+                    <div class="form-hint">Eaten by diners (>= 0)</div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="dish-disc">Quantity Discarded <span class="required">*</span></label>
+                    <input type="number" step="any" min="0" id="dish-disc" class="form-input" placeholder="e.g. 15" required>
+                    <div class="form-hint">Kitchen / buffet waste (>= 0)</div>
+                  </div>
+                  <div class="form-group" style="display:flex; flex-direction:column; justify-content:center;">
+                    <label class="form-label" style="margin-bottom:0.4rem;">Stock-Out Incident</label>
+                    <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.85rem; cursor:pointer;">
+                      <input type="checkbox" id="dish-stockout" style="width:18px; height:18px; accent-color:#e11d48;">
+                      <span style="font-weight:600; color:#b91c1c;">Dish Ran Out (Stock-out)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="dish-notes">Kitchen Notes</label>
+                  <textarea id="dish-notes" class="form-textarea" rows="2" placeholder="e.g. Batch #2 made at 8:30 AM; slight surplus discarded at closing"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary" id="btn-save-dish" style="background:#b45309;">
+                  <span>💾</span> Save Dish Record
+                </button>
+                <div id="dish-banner" class="form-banner"></div>
+              </form>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right: Dish Records & Trend Chart -->
+        <section>
+          <div class="card" id="dish-history-card">
+            <div class="card-header">
+              <div class="card-header-title">
+                <span class="story-pill" style="background:#e0f2fe; color:#0369a1;">History</span>
+                <div>
+                  <div class="card-title">Dish Service & Waste Records</div>
+                  <div class="card-description">Filter recorded observations by dish and service date</div>
+                </div>
+              </div>
+              <div id="dish-records-count-text" style="font-size: 0.8rem; font-weight: 700; color: var(--neutral-500);">
+                0 records
+              </div>
+            </div>
+
+            <!-- Dish Selector & Date Filters -->
+            <div class="filter-bar">
+              <div class="filter-pills" id="dish-filter-pills">
+                <button class="pill-btn active" data-dish="all">All Dishes</button>
+                <button class="pill-btn" data-dish="idli">Idli</button>
+                <button class="pill-btn" data-dish="dosa">Dosa</button>
+                <button class="pill-btn" data-dish="poori">Poori</button>
+                <button class="pill-btn" data-dish="pongal">Pongal</button>
+                <button class="pill-btn" data-dish="sambar">Sambar</button>
+              </div>
+              <div class="filter-custom">
+                <input type="date" id="dish-filter-start" class="filter-date-input" title="Start Date">
+                <span style="font-size:0.75rem; color:var(--neutral-400);">to</span>
+                <input type="date" id="dish-filter-end" class="filter-date-input" title="End Date">
+                <button class="btn-secondary" id="dish-filter-apply" style="padding: 0.35rem 0.65rem;">Filter</button>
+                <button class="btn-secondary" id="dish-filter-reset" style="padding: 0.35rem 0.65rem;">Reset</button>
+              </div>
+            </div>
+
+            <!-- Recorded Dish History Chart (SVG) -->
+            <div id="dish-chart-container" style="padding: 1rem 1.25rem 0.5rem 1.25rem; border-bottom: 1px solid var(--neutral-200); background: #fafafa;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div style="font-size:0.8rem; font-weight:700; color:var(--neutral-700);">
+                  📈 History Trend — <span id="chart-dish-title">Idli</span> <span style="font-size:0.7rem; font-weight:600; color:#b45309; background:#fef3c7; padding:0.15rem 0.4rem; border-radius:3px;">Synthetic Demo Data</span>
+                </div>
+                <div style="display:flex; gap:0.75rem; font-size:0.75rem; font-weight:600;">
+                  <span style="color:#0284c7;">■ Prepared</span>
+                  <span style="color:#10b981;">■ Consumed</span>
+                  <span style="color:#ef4444;">■ Discarded (Waste)</span>
+                </div>
+              </div>
+              <div id="dish-trend-svg-wrap" style="width:100%; height:180px; overflow-x:auto;">
+                <!-- Generated SVG rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Dish Table Container -->
+            <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Dish</th>
+                    <th>Provenance</th>
+                    <th>Prepared</th>
+                    <th>Consumed</th>
+                    <th>Discarded (Waste)</th>
+                    <th>Waste %</th>
+                    <th>Stock-Out</th>
+                    <th>Notes</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dish-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Bottom Grid: Forecast Accuracy & Waste/Shortage Analysis -->
+      <div class="content-grid" style="margin-top: 1.5rem; grid-template-columns: 1fr 1fr;">
+
+        <!-- Forecast Accuracy (Latest 14 Days) Card -->
+        <div class="card" id="accuracy-card">
+          <div class="card-header">
+            <div class="card-header-title">
+              <span class="story-pill" style="background:#ede9fe; color:#6d28d9;">Verification</span>
+              <div>
+                <div class="card-title">Forecast Accuracy (Latest 14 Service Days)</div>
+                <div class="card-description">Leakage-free evaluation strictly using data known by 9 PM prior day</div>
+              </div>
+            </div>
+            <div id="accuracy-mape-badge" style="font-size:0.85rem; font-weight:800; background:#ede9fe; color:#6d28d9; padding:0.3rem 0.65rem; border-radius:6px;">
+              MAPE: —
+            </div>
+          </div>
+
+          <div style="padding: 0.85rem 1.25rem; background:#f8fafc; border-bottom:1px solid var(--neutral-200); font-size:0.78rem; display:flex; flex-wrap:wrap; gap:1.2rem;">
+            <div><strong>Eligible Days:</strong> <span id="acc-eligible-count">0</span></div>
+            <div><strong>Stock-out Excluded:</strong> <span id="acc-stockout-count">0</span> (demand censored)</div>
+            <div><strong>Zero-Actual Excluded:</strong> <span id="acc-zero-count">0</span> (denominator undefined)</div>
+          </div>
+
+          <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+            <table class="forecast-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Day</th>
+                  <th>Actual Covers</th>
+                  <th>Predicted (9 PM Prior)</th>
+                  <th>Abs Error</th>
+                  <th>APE %</th>
+                  <th>Evaluation Status</th>
+                </tr>
+              </thead>
+              <tbody id="accuracy-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Dish Waste & Shortage Analysis Card -->
+        <div class="card" id="waste-analysis-card">
+          <div class="card-header">
+            <div class="card-header-title">
+              <span class="story-pill" style="background:#fee2e2; color:#b91c1c;">Waste & Shortage</span>
+              <div>
+                <div class="card-title">Dish Waste & Shortage Analysis</div>
+                <div class="card-description">Recorded kitchen audits vs simulated 10% buffered forecast</div>
+              </div>
+            </div>
+            <span style="font-size:0.7rem; font-weight:700; background:#fef2f2; color:#991b1b; padding:0.25rem 0.5rem; border-radius:4px; border:1px solid #fecdd3;">Units Distinct</span>
+          </div>
+
+          <div style="padding: 0.75rem 1.25rem; font-size: 0.75rem; color: var(--neutral-600); background:#fffbeb; border-bottom: 1px solid #fef3c7;">
+            <strong>Notice:</strong> Dish logs reflect unverified synthetic demo entries (not actual hotel records) and must not be used to claim real-world hotel waste or forecast accuracy. Units are kept distinct.
+          </div>
+
+          <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+            <table class="forecast-table">
+              <thead>
+                <tr>
+                  <th>Dish</th>
+                  <th>Unit</th>
+                  <th>Days</th>
+                  <th>Total Prep</th>
+                  <th>Consumed</th>
+                  <th>Recorded Waste (Demo)</th>
+                  <th>Waste %</th>
+                  <th>Stock-Outs</th>
+                  <th>Simulated Waste</th>
+                  <th>Simulated Shortage</th>
+                </tr>
+              </thead>
+              <tbody id="waste-summary-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+        <!-- Developer & Demo Tools (Collapsible & Safe) -->
     <section class="demo-tools-wrapper">
       <details class="demo-tools-details">
         <summary class="demo-tools-summary">
@@ -342,12 +858,62 @@
     </div>
   </div>
 
-  <!-- Toast Notification Stack -->
+  <!-- Edit Dish Modal -->
+  <div class="modal-backdrop" id="edit-dish-modal">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="modal-title">Edit Dish Log for <span id="dish-modal-dish-label"></span> (<span id="dish-modal-date-label"></span>)</div>
+        <button class="action-icon-btn" id="edit-dish-modal-close">&times;</button>
+      </div>
+      <form id="edit-dish-form" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="edit-dish-date">
+          <input type="hidden" id="edit-dish-name">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-dish-prep">Quantity Prepared <span class="required">*</span></label>
+              <input type="number" step="any" min="0" id="edit-dish-prep" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-dish-cons">Quantity Consumed <span class="required">*</span></label>
+              <input type="number" step="any" min="0" id="edit-dish-cons" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-dish-disc">Quantity Discarded <span class="required">*</span></label>
+              <input type="number" step="any" min="0" id="edit-dish-disc" class="form-input" required>
+            </div>
+            <div class="form-group" style="display:flex; flex-direction:column; justify-content:center;">
+              <label class="form-label" style="margin-bottom:0.4rem;">Stock-Out</label>
+              <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.85rem; cursor:pointer;">
+                <input type="checkbox" id="edit-dish-stockout" style="width:18px; height:18px; accent-color:#e11d48;">
+                <span style="font-weight:600; color:#b91c1c;">Stock-out Occurred</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-dish-notes">Notes</label>
+            <input type="text" id="edit-dish-notes" class="form-input" placeholder="e.g. Corrected discarded weight audit">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="edit-dish-modal-cancel">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto; background:#b45309;">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+    <!-- Toast Notification Stack -->
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Footer -->
   <footer class="app-footer">
-    BreakfastWise &bull; Hotel Breakfast Demand Forecasting &bull; Epic 1: Hotel Data Management
+    BreakfastWise &bull; Hotel Breakfast Demand Forecasting &bull; Epic 1-2: Hotel Data & Forecasting
   </footer>
 
   <script src="/static/js/app.js"></script>

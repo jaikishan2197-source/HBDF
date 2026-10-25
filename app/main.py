@@ -7,7 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import occupancy, consumption, history
+from app.routers import occupancy, consumption, history, forecast, auth, dishes, analytics
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -58,6 +58,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 app.include_router(occupancy.router)
 app.include_router(consumption.router)
 app.include_router(history.router)
+app.include_router(forecast.router)
+app.include_router(auth.router)
+app.include_router(dishes.router)
+app.include_router(analytics.router)
 
 # Mount Static Files
 if STATIC_DIR.exists():
@@ -78,3 +82,17 @@ def index_page():
     if index_file.exists():
         return FileResponse(index_file)
     return {"message": "BreakfastWise API is running. Static files are not yet created."}
+
+@app.get("/register", include_in_schema=False)
+def register_page():
+    reg_file = STATIC_DIR / "register.html"
+    if reg_file.exists():
+        return FileResponse(reg_file)
+    return {"message": "Registration page not found."}
+
+@app.get("/login", include_in_schema=False)
+def login_page():
+    login_file = STATIC_DIR / "login.html"
+    if login_file.exists():
+        return FileResponse(login_file)
+    return {"message": "Login page not found."}
